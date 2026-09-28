@@ -5,7 +5,15 @@
  * Use AtExit in main.
  */
 
+#if !defined(INC_USE_QUOTES)
 #include <atexit.h>
+#else
+# if defined(ATEXIT_PATH_TO_INC)
+# include ATEXIT_PATH_TO_INC
+# else
+# include "../include/atexit.h"
+# endif
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -11,7 +11,7 @@ This is a small project for disable double free and memory leak.\&
 \fB-\fR Minimal memory usage.\&
 .PP
 .SS Needed
-\fB-\fR C Compiler with support C89.\&
+\fB-\fR C Compiler with support C89 standard.\&
 .br
 \fB-\fR CMake 3.\&10 and greater
 .PP
@@ -34,6 +34,15 @@ make \-j$(nproc)
 .fi
 .RE
 .PP
+.nf
+.RS 4
+# Use ninja
+cmake -B build -G Ninja
+cd build/
+ninja
+.fi
+.RE
+.PP
 CMake have options:
 .PP
 \fBUSE_SHARED\fR
@@ -50,6 +59,42 @@ Build examples in \fBexamples/\fR directory.\&
 Default: OFF
 .PP
 .RE
+\fBUSE_QUOTES\fR
+.RS 4
+Use "quotes" instead of <this> in includes.\&
+.br
+Default: ON
+.PP
+.RE
+\fBOWN_INC_PATH\fR
+.RS 4
+Use own path to atexit.\&h
+.br
+Default: .\&.\&/include/atexit.\&h
+.PP
+.RE
+.SS How add to your project
+That use atexit in your project, you can:
+.br
+1.\& Link code and library (\fBlibatexit_do.a\fR)
+.nf
+.RS 4
+# Example:
+gcc -B/path/to/libraries/ your_code.c -latexit_do -o output
+.fi
+.RE
+.PP
+2.\& Move source to project:
+.nf
+.RS 4
+mkdir -p myproject/src
+cp src/atexit.c myproject/src/
+cp -r include/ myproject/
+# If needed, define USE_QUOTES and OWN_INC_PATH in CMake or
+# INC_USE_QUOTES and ATEXIT_PATH_TO_INC in code via #define.
+.fi
+.RE
+.PP
 .SH EXAMPLES
 You can find examples in \fBexamples/\fR directory.\&
 .PP
