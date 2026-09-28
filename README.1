@@ -1,0 +1,60 @@
+.TH "README" "1" "2026\-09\-28" "TheCRatTime" "atexit"
+.SH NAME
+\fBatexit\fR \- forget about the forgotten \fBfree\fR(3)
+.PP
+.SH DESCRIPTION
+This is a small project for disable double free and memory leak.\&
+.PP
+.SS Features
+\fB-\fR \fBC89\fR/\fBANSI C\fR code standard.\&
+.br
+\fB-\fR Minimal memory usage.\&
+.PP
+.SS Needed
+\fB-\fR C Compiler with support C89.\&
+.br
+\fB-\fR CMake 3.\&10 and greater
+.PP
+.SH BUILDING
+.nf
+.RS 4
+# Just build
+cmake \-B build
+cd build/
+make
+.fi
+.RE
+.PP
+.nf
+.RS 4
+# Fast build
+cmake \-B build
+cd build/
+make \-j$(nproc)
+.fi
+.RE
+.PP
+CMake have options:
+.PP
+\fBUSE_SHARED\fR
+.RS 4
+Use shared library instead of static.\&
+.br
+Default: OFF
+.PP
+.RE
+\fBBUILD_EX\fR
+.RS 4
+Build examples in \fBexamples/\fR directory.\&
+.br
+Default: OFF
+.PP
+.RE
+.SH EXAMPLES
+You can find examples in \fBexamples/\fR directory.\&
+.PP
+.SH LICENSE
+Project is under \fBApache 2.\&0\fR license.\&
+.PP
+.SH AUTHORS
+TheCRatTime.\&
