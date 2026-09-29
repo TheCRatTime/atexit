@@ -11,17 +11,21 @@
 .\" WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 .\" See the License for the specific language governing permissions and
 .\" limitations under the License.
-.TH "atexit_do" "3" "2026\-09\-29" "TheCRatTime" "AtExit reference"
+.TH "defer" "3" "2026\-09\-29" "TheCRatTime" "AtExit reference"
 .SH NAME
-\fBatexit\fR \- forget about the forgotten \fBfree\fR(3)
+\fBdefer\fR \- macro, that expands to \fBSetAtExit\fR(3).\&
+.PP
+.SH SYNOPSIS
+\fB#include\fR <\fBatexit.\&h\fR>
+.PP
+\fB#define defer(\fIhd\fB, \fIfunc\fB, \fIarg\fB) SetAtExit(\fIhd\fB, \fIfunc\fB, \fIarg\fB)\fR
 .PP
 .SH DESCRIPTION
-This is small library, that only does one thing: call functions at exit.\&
+\fBdefer\fR \- stolen from Go.\&
 .PP
-See \fBREADME.md\fR in project or if you installed and built project, you can see man-pages about functions.\&
-.PP
-.SS List of functions
-\fBInitAtExit\fR(3), \fBSetAtExit\fR(3), \fBAtExitClean\fR(3), \fBDoAtExit\fR(3), \fBAtExitMalloc\fR(3), \fBAtExitFopen\fR(3) and \fBatexit_defer\fR(3) (just write \fBdefer\fR).\&
-.PP
+Usage: see \fBSetAtExit\fR(3)
 .SH AUTHORS
-Project and man-page: TheCRatTime
+Project and man\-page: TheCRatTime
+.PP
+.SH SEE ALSO
+\fBatexit_do\fR(3), \fBInitAtExit\fR(3), \fBSetAtExit\fR(3), \fBAtExitHeader\fR(3type), \fBSetAtExit\fR(3)

@@ -51,7 +51,7 @@ void TestFunc(AtExitHeader* atexit_h, int num1, int num2) {
     /*****************************************
      * No need check like this:
      *   if (allocated1 != NULL) {
-     *    SetAtExit(...)
+     *     defer(...)
      *   }
      * because AtExitMalloc automatically sets
      * auto-free function.
@@ -73,7 +73,7 @@ void TestFunc(AtExitHeader* atexit_h, int num1, int num2) {
  * Need to write:
  * 1. Call to function
  * 2. DoAtExit() call
- * (3.) Return value
+ * (3. Return value)
  */
 void TestFuncWrapper(AtExitHeader* atexit_do, int n1, int n2) {
   TestFunc(atexit_do, n1, n2);
@@ -92,7 +92,8 @@ int main(void) {
     return 1;
   }
 
-  SetAtExit(main_atexit, free, test_atexit);
+  /* Using 'defer' from Go */
+  defer(main_atexit, free, test_atexit);
 
   test_atexit = InitAtExit(0);
   if (test_atexit == NULL) {
