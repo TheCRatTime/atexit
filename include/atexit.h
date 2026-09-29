@@ -61,7 +61,9 @@ FILE* AtExitFopen(AtExitHeader* head, const char* filename,
    function, you can get memory leak. */
 void AtExitClean(AtExitHeader* head);
 
+#ifdef USE_DEFER
 /* Stolen from Go */
 #define defer(hd, func, arg) SetAtExit(hd, func, arg)
+#endif
 
 #endif /* ATEXIT_ATEXIT_H_ */

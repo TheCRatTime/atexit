@@ -5,6 +5,11 @@
  * Use AtExit in main.
  */
 
+/* Using keyword: defer */
+#if __STDC__ 
+#define USE_DEFER
+#endif
+
 #if !defined(INC_USE_QUOTES)
 #include <atexit.h>
 #else
@@ -112,6 +117,7 @@ int main(void) {
 
   DoAtExit(main_atexit);
   free(main_atexit);
+  printf("%d\n", __STDC__);
   return 0;
 }
 
