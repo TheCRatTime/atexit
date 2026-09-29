@@ -1,0 +1,70 @@
+.\" Copyright (C) 2026 TheCRatTime
+.\"
+.\" Licensed under the Apache License, Version 2.0 (the "License");
+.\" you may not use this file except in compliance with the License.
+.\" You may obtain a copy of the License at
+.\"
+.\"     http://www.apache.org/licenses/LICENSE-2.0
+.\"
+.\" Unless required by applicable law or agreed to in writing, software
+.\" distributed under the License is distributed on an "AS IS" BASIS,
+.\" WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+.\" See the License for the specific language governing permissions and
+.\" limitations under the License.
+.TH "AtExitMalloc" "3" "2026\-09\-29" "TheCRatTime" "AtExit reference"
+.SH NAME
+\fBAtExitMalloc\fR \- wrapper for \fBSetAtExit\fR(3) and \fBmalloc\fR(3)
+.PP
+.SH SYNOPSIS
+\fB#include\fR <\fBatexit.h\fR>
+.br
+\fB#include\fR <\fBstddef.h\fR>
+.PP
+\fBvoid* AtExitMalloc(AtExitHeader* \fIhead\fB, size_t \fIbytes\fB);\fR
+.PP
+.SH DESCRIPTION
+This is just wrapper.
+.PP
+\fIhead\fR
+.RS 4
+\fBAtExitHeader\fR struct.\& Need for set auto\-free.\&
+.RE
+.PP
+\fIbytes\fR
+.RS 4
+Number of bytes, that will be allocated by \fBmalloc\fR(3).\&
+.RE
+.PP
+.SH RETURN VALUE
+The same as \fBmalloc\fR(3).\&
+.PP
+.SH EXAMPLES
+.nf
+#include <atexit.h>
+
+#include <stdlib.h>
+
+int main(void) {
+  /* init AtExitHeader with name atexit_h... */
+  int* integer = (int*)AtExitMalloc(atexit_h, sizeof(int));
+  if (integer == NULL) {
+	/* Free and do AtExit atexit_h */
+	DoAtExit(atexit_h);
+	free(atexit_h)
+	/* ... */
+	return 1;
+  }
+
+  /* No need write SetAtExit(..., free, ...) because
+     AtExitMalloc do it automatically. */
+
+  /* ... */
+  return 0;
+}
+.fi
+.PP
+.SH AUTHORS
+Project and man-page: TheCRatTime
+.PP
+.SH SEE ALSO
+\fBatexit_do\fR(3), \fBInitAtExit\fR(3), \fBSetAtExit\fR(3) \fBAtExitHeader\fR(3type).\&

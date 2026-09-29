@@ -1,0 +1,55 @@
+.\" Copyright (C) 2026 TheCRatTime
+.\"
+.\" Licensed under the Apache License, Version 2.0 (the "License");
+.\" you may not use this file except in compliance with the License.
+.\" You may obtain a copy of the License at
+.\"
+.\"     http://www.apache.org/licenses/LICENSE-2.0
+.\"
+.\" Unless required by applicable law or agreed to in writing, software
+.\" distributed under the License is distributed on an "AS IS" BASIS,
+.\" WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+.\" See the License for the specific language governing permissions and
+.\" limitations under the License.
+.TH "AtExitHeader" "3type" "2026\-09\-29" "TheCRatTime" "AtExit reference"
+.SH NAME
+\fBAtExitHeader\fR \- AtExit struct for use AtExit* functions.\&
+.PP
+.SH SYNOPSIS
+\fB#include\fR <\fBatexit.\&h\fR>
+.PP
+.nf
+\fBtypedef struct AtExitHeader {
+.br
+  int         capacity; /* Size of nodes */
+.br
+  int             left; /* Used nodes    */
+.br
+  AtExitNode*    array; /* Nodes         */
+.br
+} AtExitHeader;\fR
+.fi
+.PP
+.SH DESCRIPTION
+This struct need for use AtExit* functions (for example, \fBInitAtExit\fR(3)).\&
+.PP
+\fBcapacity\fR
+.RS 4
+Size of nodes.\&
+.RE
+.PP
+\fBleft\fR
+.RS 4
+Total used nodes.\&
+.RE
+.PP
+\fBarray\fR
+.RS 4
+Pointer to array with internal struct \fBAtExitNode\fR.\&
+.RE
+.PP
+.SH AUTHORS
+Project and man\-page: ThaCRatTime
+.PP
+.SH SEE ALSO
+\fBatexit_do\fR(3), \fBInitAtExit\fR(3), \fBDoAtExit\fR(3)

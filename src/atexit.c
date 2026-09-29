@@ -150,3 +150,19 @@ FILE* AtExitFopen(AtExitHeader* head, const char* filename,
 
   return ret;
 }
+
+void AtExitClean(AtExitHeader *head) {
+  int cur_node = 0;
+  if (head == NULL) {
+    return;
+  }
+
+  for(; cur_node < head->capacity; cur_node++) {
+    head->array[cur_node].function = NULL;
+    head->array[cur_node].arg      = NULL;
+  }
+
+  head->left = 0;
+  
+  return;
+}

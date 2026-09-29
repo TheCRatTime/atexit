@@ -1,0 +1,87 @@
+.\" Copyright (C) 2026 TheCRatTime
+.\"
+.\" Licensed under the Apache License, Version 2.0 (the "License");
+.\" you may not use this file except in compliance with the License.
+.\" You may obtain a copy of the License at
+.\"
+.\"     http://www.apache.org/licenses/LICENSE-2.0
+.\"
+.\" Unless required by applicable law or agreed to in writing, software
+.\" distributed under the License is distributed on an "AS IS" BASIS,
+.\" WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+.\" See the License for the specific language governing permissions and
+.\" limitations under the License.
+.TH "SetAtExit" "3" "2026\-09\-29" "TheCRatTime" "AtExit reference"
+.SH NAME
+\fBSetAtExit\fR \- set function, that will be called at exit.\&
+.PP
+.SH SYNOPSIS
+\fB#include\fR <\fBatexit.h\fR>
+.PP
+\fBint SetAtExit(AtExitHeader* \fIhead\fB, void (*\fIto_set\fB)(void*), void* \fIarg\fB);\fR
+.PP
+.SH DESCRIPTION
+This function sets to \fIhead\fR function \fIto_set\fR with argument \fIarg\fR.\&
+.PP
+\fIhead\fR
+.RS 4
+\fBAtExitHeader\fR struct.\& Function will be put there.\&
+.RE
+.PP
+\fIto_set\fR
+.RS 4
+Pointer to function. Prototype must be like this:
+.br
+\fBvoid \fISomeName\fB(void* \fIname_of_arg\fB)\fR;
+.RE
+.PP
+\fIarg\fR
+.RS 4
+Argument, that will be passed to function.\&
+.RE
+.PP
+.SH EXAMPLES
+.nf
+#include <atexit.h>
+
+#include <stdlib.h>
+
+void ExampleFree(void* ptr);
+
+void ExampleFree(void* ptr) {
+  /* For example, just free */
+  free(ptr);
+}
+
+int main(void) {
+  /* init AtExitHeader with name atexit_h... */
+
+  int* integer = (int*)malloc(sizeof(int));
+  if (integer == NULL) {
+    /* Handle error. For example: */
+	DoAtExit(atexit_h); /* Call functions */
+	free(atexit_h);
+	/* ... */
+	return 1;
+  }
+
+  /* Set auto-free: */
+  SetAtExit(atexit_h, ExampleFree, integer);
+
+  /* See also: AtExitMalloc(3) */
+
+  /* ... */
+  DoAtExit(atexit_h); /* integer will be automatically freed */
+  free(atexit_h);
+  return 0;
+}
+.fi
+.PP
+.SH RETURN VALUE
+Return value is 0 if good and 1 if arguments are \fBNULL\fR or haven't places for functions.\&
+.PP
+.SH AUTHORS
+Project and man-page: TheCRatTime
+.PP
+.SH SEE ALSO
+\fBatexit_do\fR(3), \fBAtExitHeader\fR(3type), \fBAtExitMalloc\fR(3) \fBInitAtExit\fR(3).\&

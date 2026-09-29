@@ -56,4 +56,9 @@ void* AtExitMalloc(AtExitHeader* head, size_t bytes);
 FILE* AtExitFopen(AtExitHeader* head, const char* filename,
                   const char* modes);
 
+/* Clean all AtExit list.
+   Warning: if you have set free, don't call this
+   function, you can get memory leak. */
+void AtExitClean(AtExitHeader* head);
+
 #endif /* ATEXIT_ATEXIT_H_ */
