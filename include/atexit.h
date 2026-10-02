@@ -19,6 +19,17 @@
 
 #include <stdio.h>
 
+/*
+ * There isn't be debug in your program
+ * if you haven't defined ATEXIT_DEBUG
+ *
+ * There are wrappers for alloc to check
+ * memory leak.
+ *
+ * Defined for source code.
+ */
+#include "debug.h"
+
 #define DEFAULT_ATEXIT_SIZE 50
 
 /* AtExit node */
@@ -30,7 +41,7 @@ typedef struct AtExitNode {
 /* Header of AtExit nodes */
 typedef struct AtExitHeader {
   int         capacity; /* Size of nodes */
-  int             left; /* Used nodes    */
+  int             used; /* Used nodes    */
   AtExitNode*    array; /* Nodes         */
 } AtExitHeader;
 
@@ -61,9 +72,12 @@ FILE* AtExitFopen(AtExitHeader* head, const char* filename,
    function, you can get memory leak. */
 void AtExitClean(AtExitHeader* head);
 
+/* Free HEAD. */
+void AtExitFree(AtExitHeader* head);
+
 #ifdef USE_DEFER
 /* Stolen from Go */
-#define defer(hd, func, arg) SetAtExit(hd, func, arg)
+#define defer SetAtExit
 #endif
 
 #endif /* ATEXIT_ATEXIT_H_ */
