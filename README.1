@@ -50,29 +50,22 @@ CMake have options:
 Use shared library instead of static.\&
 .br
 Default: OFF
-.PP
 .RE
+.PP
 \fBBUILD_EX\fR
 .RS 4
 Build examples in \fBexamples/\fR directory.\&
 .br
 Default: OFF
-.PP
 .RE
-\fBUSE_QUOTES\fR
+.PP
+\fBUSE_TESTS\fR
 .RS 4
-Use "quotes" instead of <this> in includes.\&
+Build tests.\&
 .br
 Default: ON
-.PP
 .RE
-\fBOWN_INC_PATH\fR
-.RS 4
-Use own path to atexit.\&h
-.br
-Default: .\&.\&/include/atexit.\&h
 .PP
-.RE
 .SS How add to your project
 That use atexit in your project, you can:
 .br
@@ -88,10 +81,8 @@ gcc -B/path/to/libraries/ your_code.c -latexit_do -o output
 .nf
 .RS 4
 mkdir -p myproject/src
-cp src/atexit.c myproject/src/
+cp src/*.c myproject/src/
 cp -r include/ myproject/
-# If needed, define USE_QUOTES and OWN_INC_PATH in CMake or
-# INC_USE_QUOTES and ATEXIT_PATH_TO_INC in code via #define.
 .fi
 .RE
 .PP

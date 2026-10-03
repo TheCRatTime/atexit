@@ -42,11 +42,8 @@ Default: OFF
 **BUILD_EX** - build examples in `examples/` directory.
 Default: OFF
 
-**USE_QUOTES** - Use "quotes" instead of <this> in includes.
+**USE_TESTS** - build tests.
 Default: ON
-
-**OWN_INC_PATH** - Use own path to atexit.h
-Default: ../include/atexit.h
 
 ### How add to your project
 That use atexit in your project, you can:
@@ -59,10 +56,8 @@ gcc -B/path/to/libraries/ your_code.c -latexit_do -o output
 2. Move source to project:
 ```bash
 mkdir -p myproject/src
-cp src/atexit.c myproject/src/
+cp src/*.c myproject/src/
 cp -r include/ myproject/
-# If needed, define USE_QUOTES and OWN_INC_PATH in CMake or
-# INC_USE_QUOTES and ATEXIT_PATH_TO_INC in code via #define.
 ```
 
 ## Examples

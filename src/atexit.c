@@ -14,23 +14,8 @@
  * limitations under the License.
  */
 
-/*
- * Without compile_commands.json or
- * needed not <path>, using quotes.
- * If set path, use it.
- */
-
-#define ATEXIT_DEBUG
-
-#if !defined(INC_USE_QUOTES)
-# include <atexit.h>
-#else
-# if defined(ATEXIT_PATH_TO_INC)
-# include ATEXIT_PATH_TO_INC
-# else
-# include "../include/atexit.h"
-# endif
-#endif
+#include <atexit.h>
+#include <debug.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -119,7 +104,7 @@ void DoAtExit(AtExitHeader* head) {
 
 /* AtExitMalloc and AtExitFopen just wrappers
    for malloc()/fopen() and SetAtExit */
-
+#ifndef ATEXIT_DEBUG
 void* AtExitMalloc(AtExitHeader* head, size_t bytes) {
   void* ret = NULL;
 
@@ -149,7 +134,6 @@ FILE* AtExitFopen(AtExitHeader* head, const char* filename,
     return NULL;
   }
 
-  /* Using internal function. */
   SetAtExit(head, AtExitFClose, ret);
 
   return ret;
@@ -186,3 +170,104 @@ void AtExitFree(AtExitHeader *head) {
   MemFree(head->array, 1, &size1);
   MemFree(head, 1, &size2);
 }
+#else
+typedef struct FreeBlock {
+  void* ptr;
+  char* key;
+} FreeBlock;
+
+/* Internal free function */
+static void FreeFreeBlock(void* data) {
+  FreeBlock* as_block = (FreeBlock*)data;
+  size_t size = sizeof(FreeBlock);
+  
+  if (as_block->ptr) {
+    MemFree(as_block->ptr, 0, as_block->key);
+  }
+  
+  MemFree(as_block, 1, &size);
+}
+
+void* AtExitMalloc(AtExitHeader* head, size_t bytes, char* key) {
+  void* ret = NULL;
+  FreeBlock* f_after = NULL;
+
+  if (head == NULL || bytes <= 0) {
+    return NULL;
+  }
+
+  ret = malloc(bytes);
+  if (ret == NULL) {
+    return NULL;
+  }
+
+  /* To trace memory leaks */
+  f_after = (FreeBlock*)malloc(sizeof(FreeBlock));
+  if (!f_after) {
+    /* Can't set smart memory free */
+    SetAtExit(head, free, ret);
+    return ret;
+  }
+
+  /* Only for smart free/malloc */
+  AddAllocated(bytes + sizeof(FreeBlock));
+  
+  f_after->ptr = ret;
+  f_after->key = key;
+
+  /* Add to map key and bytes */
+  SetTrace(key, bytes);
+  SetAtExit(head, FreeFreeBlock, f_after);
+  
+  return ret;
+}
+
+FILE* AtExitFopen(AtExitHeader* head, const char* filename,
+                  const char* modes) {
+  FILE* ret = NULL;
+  if (head == NULL || filename == NULL || modes == NULL) {
+    return NULL;
+  }
+
+  ret = fopen(filename, modes);
+  if (!ret) {
+    return NULL;
+  }
+
+  SetAtExit(head, AtExitFClose, ret);
+
+  return ret;
+}
+
+void AtExitClean(AtExitHeader *head) {
+  int cur_node = 0;
+  if (head == NULL) {
+    return;
+  }
+
+  for(; cur_node < head->capacity; cur_node++) {
+    head->array[cur_node].function = NULL;
+    head->array[cur_node].arg      = NULL;
+  }
+
+  head->used = 0;
+  
+  return;
+}
+
+void AtExitFree(AtExitHeader *head) {
+  size_t size1 = 0;
+  size_t size2 = 0;
+  if (head == NULL) {
+    return;
+  }
+
+  DoAtExit(head);
+
+  size1 = sizeof(AtExitNode) * (size_t)head->capacity;
+  size2 = sizeof(AtExitHeader);
+  
+  MemFree(head->array, 1, &size1);
+  MemFree(head, 1, &size2);
+}
+#endif

@@ -40,6 +40,9 @@ void DropAllocated(void);
 
 /* Like DropAllocated(), but writes value to STATS */
 void WriteAllocated(DropAllocRet* stats);
-#endif
+
+/* Add BYTES to allocated */
+void AddAllocated(size_t bytes);
+#endif 
 
 #endif /* ATEXIT_DEBUG_H_ */

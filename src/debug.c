@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#define ATEXIT_DEBUG
 #include <debug.h>
 
 #include <stddef.h>
@@ -73,5 +72,9 @@ void DropAllocated(void) {
 void WriteAllocated(DropAllocRet *stats) {
   stats->allocated = allocated;
   stats->freed     = freed;
+}
+
+void AddAllocated(size_t bytes) {
+  allocated += bytes;
 }
 #endif

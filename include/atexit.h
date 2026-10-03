@@ -26,8 +26,9 @@
  * There are wrappers for alloc to check
  * memory leak.
  *
- * Defined for source code.
+ * Included for source code.
  */
+
 #include "debug.h"
 
 #define DEFAULT_ATEXIT_SIZE 50
@@ -60,7 +61,12 @@ void DoAtExit(AtExitHeader* head);
 
 /* Malloc data and set AtExit free function
    Return pointer, that gave by malloc */
-void* AtExitMalloc(AtExitHeader* head, size_t bytes);
+void* AtExitMalloc(AtExitHeader* head, size_t bytes
+/* In debug, needed key argument */
+#ifdef ATEXIT_DEBUG
+                   , char* key
+#endif
+);
 
 /* Open file and set AtExit fclose function
    Return pointer to FILE*, that gave by fopen */

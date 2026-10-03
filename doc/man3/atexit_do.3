@@ -11,7 +11,7 @@
 .\" WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 .\" See the License for the specific language governing permissions and
 .\" limitations under the License.
-.TH "atexit_do" "3" "2026\-09\-29" "TheCRatTime" "AtExit reference"
+.TH "atexit_do" "3" "2026\-10\-03" "TheCRatTime" "AtExit reference"
 .SH NAME
 \fBatexit\fR \- forget about the forgotten \fBfree\fR(3)
 .PP
@@ -21,7 +21,48 @@ This is small library, that only does one thing: call functions at exit.\&
 See \fBREADME.md\fR in project or if you installed and built project, you can see man-pages about functions.\&
 .PP
 .SS List of functions
-\fBInitAtExit\fR(3), \fBSetAtExit\fR(3), \fBAtExitClean\fR(3), \fBDoAtExit\fR(3), \fBAtExitMalloc\fR(3), \fBAtExitFopen\fR(3) and \fBatexit_defer\fR(3) (just write \fBdefer\fR).\&
+\fBInitAtExit\fR(3)
+.RS 4
+Init \fBAtExitHeader\fR struct.\&
+.RE
+.PP
+\fBSetAtExit\fR(3)
+.RS 4
+Set function, that will be called at \fBDoAtExit\fR(3).\&
+.RE
+.PP
+\fBAtExitClean\fR(3)
+.RS 4
+Clean all \fBAtExitHeader\fR without running \fBDoAtExit\fR(3).\&
+.RE
+.PP
+\fBDoAtExit\fR(3)
+.RS 4
+Run all \fBAtExitHeader\fR struct.\&
+.RE
+.PP
+\fBAtExitMalloc\fR(3)
+.RS 4
+This is wrapper for \fBmalloc\fR(3), doing \fBmalloc\fR(3) and set to \fBAtExitHeader\fR function \fBfree\fR(3).\&
+.RE
+.PP
+\fBAtExitFopen\fR(3)
+.RS 4
+Also wrapper, but for \fBfopen\fR(3), doing \fBfopen\fR(3) and set to \fBAtExitHeader\fR function \fBfclose\fR(3).\&
+.RE
+.PP
+\fBatexit_defer\fR(3)
+.RS 4
+Macro, that equals \fBSetAtExit\fR.\& Just write \fBdefer\fR.\& Needed write \fB#define USE_DEFER\fR.\&
+.RE
+.PP
+\fBAtExitFree\fR(3),
+.RS 4
+Free \fBAtExitHeader\fR struct with function \fBfree\fR(3).\&
+.RE
 .PP
 .SH AUTHORS
 Project and man-page: TheCRatTime
+.PP
+.SH SEE ALSO
+\fBInitAtExit\fR(3), \fBSetAtExit\fR(3), \fBAtExitClean\fR(3), \fBDoAtExit\fR(3), \fBAtExitMalloc\fR(3), \fBAtExitFopen\fR(3), \fBatexit_defer\fR(3), \fBAtExitFree\fR(3), \fBAtExitHeader\fR(3type), \fBmalloc\fR(3), \fBfree\fR(3), \fBfopen\fR(3), \fBfclose\fR(3), 

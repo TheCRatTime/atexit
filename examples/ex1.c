@@ -5,29 +5,18 @@
  * Use AtExit in main.
  */
 
-/* Using keyword: defer */
-#if __STDC__ 
-#define USE_DEFER
+/* Disable debug */
+#ifdef ATEXIT_DEBUG
+#undef ATEXIT_DEBUG
 #endif
 
-#if !defined(INC_USE_QUOTES)
+/* Using keyword: defer */
+#define USE_DEFER
+
 #include <atexit.h>
-#else
-# if defined(ATEXIT_PATH_TO_INC)
-# include ATEXIT_PATH_TO_INC
-# else
-# include "../include/atexit.h"
-# endif
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
-
-/* *** Prototypes *** */
-void TestFunc(AtExitHeader* atexit_h, int num1, int num2);
-
-/* Using wrapper for cleaned code */
-void TestFuncWrapper(AtExitHeader* atexit_do, int n1, int n2);
 
 /**********************************************
  * Test function.
@@ -36,13 +25,10 @@ void TestFuncWrapper(AtExitHeader* atexit_do, int n1, int n2);
  * executed at exit.
  * Other         -> functions arguments
  */
-void TestFunc(AtExitHeader* atexit_h, int num1, int num2) {
+static void TestFunc(AtExitHeader* atexit_h, int num1, int num2) {
   /* Using special function AtExitMalloc for malloc() */
   int* allocated1 = (int*)AtExitMalloc(atexit_h, sizeof(int));
   int* allocated2 = (int*)AtExitMalloc(atexit_h, sizeof(int));
-
-  *allocated1 = num1;
-  *allocated2 = num2;
 
   if (allocated1 == NULL) {
     /**************************************************
@@ -63,6 +49,9 @@ void TestFunc(AtExitHeader* atexit_h, int num1, int num2) {
      */
     return;
   }
+  
+  *allocated1 = num1;
+  *allocated2 = num2;
 
   printf("%d + %d = %d\n",
          *allocated1, *allocated2,
@@ -71,20 +60,27 @@ void TestFunc(AtExitHeader* atexit_h, int num1, int num2) {
   return;
 }
 
-/*************************************
- * Small wrapper.
- * Arguments: the same of the function
- * 
- * Need to write:
- * 1. Call to function
- * 2. DoAtExit() call
- * (3. Return value)
+/**************************************
+ * GENERATING wrapper by including file
+ *
+ * Need no define four macro:
  */
-void TestFuncWrapper(AtExitHeader* atexit_do, int n1, int n2) {
-  TestFunc(atexit_do, n1, n2);
-  DoAtExit(atexit_do);
-  return;
-}
+
+/* 1st: name of function */
+#define GEN_NAME TestFunc
+
+/* 2nd: name of wrapper*/
+#define GEN_OUT  TestFuncWrapper
+
+/* 3rd: type */
+#define GEN_TYPE void
+
+/* 4th: arguments.
+   to add argument write: GENARG(type, name) */
+#define GEN_ARGS GENARG(int, n1) GENARG(int, n2) /* ... */
+
+/* Generate our wrapper. */
+#include <gen_wrapper.h>
 
 /* *** Main function *** */
 int main(void) {
@@ -103,7 +99,7 @@ int main(void) {
   test_atexit = InitAtExit(0);
   if (test_atexit == NULL) {
     /* ...but you need call: */
-    DoAtExit(main_atexit);
+    AtExitFree(main_atexit);
     /* or create wrapper.    */
     perror("InitAtExit");
     return 1;
@@ -115,9 +111,8 @@ int main(void) {
    */
   TestFuncWrapper(test_atexit, 6, 7);
 
-  DoAtExit(main_atexit);
-  free(main_atexit);
-  printf("%d\n", __STDC__);
+  /* Before free calls DoAtExit() */
+  AtExitFree(main_atexit);
   return 0;
 }
 
