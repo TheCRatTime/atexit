@@ -24,15 +24,34 @@
 /* fclose() isn't equals void (*func)(void*),
    needed wrapper. */
 static void AtExitFClose(void* file) {
-  FILE* as_file = (FILE*)file;
-  fclose(as_file);
+  if (file != NULL) {
+    fclose((FILE*)file);
+  }
+}
+
+/* Check validate of HEADER */
+static int BadAtExitHeader(AtExitHeader* header) {
+  if (header == NULL) {
+    return 1;
+  }
+
+  if (header->array == NULL ||
+      header->used < 0      ||
+      header->capacity <= 0 ||
+      header->used > header->capacity) {
+    return 1;
+  }
+
+  return 0;
 }
 
 AtExitHeader* InitAtExit(int size) {
   AtExitHeader* ret = NULL;
+  void* slice = NULL;
   int cur_node = 0;
 
-  if (size < 0) {
+  /* No size / Big size error */
+  if (size < 0 || size > 175) {
     return ret;
   }
 
@@ -41,19 +60,19 @@ AtExitHeader* InitAtExit(int size) {
     size = DEFAULT_ATEXIT_SIZE;
   }
 
-  ret = (AtExitHeader*)MemAlloc(sizeof(AtExitHeader), NULL);
-  if (ret == NULL) {
+  slice = (AtExitHeader*)MemAlloc(
+          sizeof(AtExitHeader) + (sizeof(AtExitNode) * (size_t)size));
+  if (slice == NULL) {
     return NULL;
   }
 
+  ret = slice;
   ret->capacity = size;
-  ret->used     = 0;
-  ret->array = (AtExitNode*)MemAlloc(sizeof(AtExitNode) * (size_t)size, NULL);
-  if (ret->array == NULL) {
-    MemFree(ret, 1, (void*)sizeof(AtExitHeader));
-    return NULL;
-  }
+  ret->used = 0;
 
+  /* slice = header + nodes... */
+  ret->array = slice + sizeof(AtExitHeader);
+  
   for(; cur_node < size; cur_node++) {
     ret->array[cur_node].function = NULL;
     ret->array[cur_node].arg      = NULL;
@@ -62,8 +81,8 @@ AtExitHeader* InitAtExit(int size) {
   return ret;
 }
 
-int SetAtExit(AtExitHeader* head, void (*to_set)(void*), void* arg) {
-  if (head == NULL || to_set == NULL || arg == NULL) {
+int SetAtExit(AtExitHeader* head, V_VP_F func, void* arg) {
+  if (BadAtExitHeader(head) || func == NULL || arg == NULL) {
     return 1;
   }
 
@@ -72,8 +91,8 @@ int SetAtExit(AtExitHeader* head, void (*to_set)(void*), void* arg) {
     return 1;
   }
 
-  head->array[head->used].function = to_set;
-  head->array[head->used].arg      =    arg;
+  head->array[head->used].function = func;
+  head->array[head->used].arg      =  arg;
   head->used++;
   
   return 0;
@@ -81,18 +100,19 @@ int SetAtExit(AtExitHeader* head, void (*to_set)(void*), void* arg) {
 
 void DoAtExit(AtExitHeader* head) {
   int cur_func = 0;
-  if (head == NULL) {
+  
+  if (BadAtExitHeader(head)) {
     return;
   }
 
   /* Using LIFO -> Last In First Out. */
   for(cur_func = head->used; cur_func >= 0; cur_func--) {
-    void* argument = head->array[cur_func].arg;
     if (head->array[cur_func].function == NULL) {
       continue;
     }
 
-    head->array[cur_func].function(argument);
+    head->array[cur_func].function(
+                            head->array[cur_func].arg);
 
     head->array[cur_func].function = NULL;
     head->array[cur_func].arg      = NULL;
@@ -104,11 +124,10 @@ void DoAtExit(AtExitHeader* head) {
 
 /* AtExitMalloc and AtExitFopen just wrappers
    for malloc()/fopen() and SetAtExit */
-#ifndef ATEXIT_DEBUG
 void* AtExitMalloc(AtExitHeader* head, size_t bytes) {
   void* ret = NULL;
 
-  if (head == NULL || bytes <= 0) {
+  if (BadAtExitHeader(head) || bytes == 0) {
     return NULL;
   }
 
@@ -125,115 +144,15 @@ void* AtExitMalloc(AtExitHeader* head, size_t bytes) {
 FILE* AtExitFopen(AtExitHeader* head, const char* filename,
                   const char* modes) {
   FILE* ret = NULL;
-  if (head == NULL || filename == NULL || modes == NULL) {
+  if (BadAtExitHeader(head) || filename == NULL || modes == NULL) {
     return NULL;
   }
 
   ret = fopen(filename, modes);
-  if (!ret) {
-    return NULL;
-  }
-
-  SetAtExit(head, AtExitFClose, ret);
-
-  return ret;
-}
-
-void AtExitClean(AtExitHeader *head) {
-  int cur_node = 0;
-  if (head == NULL) {
-    return;
-  }
-
-  for(; cur_node < head->capacity; cur_node++) {
-    head->array[cur_node].function = NULL;
-    head->array[cur_node].arg      = NULL;
-  }
-
-  head->used = 0;
-  
-  return;
-}
-
-void AtExitFree(AtExitHeader *head) {
-  size_t size1 = 0;
-  size_t size2 = 0;
-  if (head == NULL) {
-    return;
-  }
-
-  DoAtExit(head);
-
-  size1 = sizeof(AtExitNode) * (size_t)head->capacity;
-  size2 = sizeof(AtExitHeader);
-  
-  MemFree(head->array, 1, &size1);
-  MemFree(head, 1, &size2);
-}
-#else
-typedef struct FreeBlock {
-  void* ptr;
-  char* key;
-} FreeBlock;
-
-/* Internal free function */
-static void FreeFreeBlock(void* data) {
-  FreeBlock* as_block = (FreeBlock*)data;
-  size_t size = sizeof(FreeBlock);
-  
-  if (as_block->ptr) {
-    MemFree(as_block->ptr, 0, as_block->key);
-  }
-  
-  MemFree(as_block, 1, &size);
-}
-
-void* AtExitMalloc(AtExitHeader* head, size_t bytes, char* key) {
-  void* ret = NULL;
-  FreeBlock* f_after = NULL;
-
-  if (head == NULL || bytes <= 0) {
-    return NULL;
-  }
-
-  ret = malloc(bytes);
   if (ret == NULL) {
     return NULL;
   }
 
-  /* To trace memory leaks */
-  f_after = (FreeBlock*)malloc(sizeof(FreeBlock));
-  if (!f_after) {
-    /* Can't set smart memory free */
-    SetAtExit(head, free, ret);
-    return ret;
-  }
-
-  /* Only for smart free/malloc */
-  AddAllocated(bytes + sizeof(FreeBlock));
-  
-  f_after->ptr = ret;
-  f_after->key = key;
-
-  /* Add to map key and bytes */
-  SetTrace(key, bytes);
-  SetAtExit(head, FreeFreeBlock, f_after);
-  
-  return ret;
-}
-
-FILE* AtExitFopen(AtExitHeader* head, const char* filename,
-                  const char* modes) {
-  FILE* ret = NULL;
-  if (head == NULL || filename == NULL || modes == NULL) {
-    return NULL;
-  }
-
-  ret = fopen(filename, modes);
-  if (!ret) {
-    return NULL;
-  }
-
   SetAtExit(head, AtExitFClose, ret);
 
   return ret;
@@ -241,7 +160,8 @@ FILE* AtExitFopen(AtExitHeader* head, const char* filename,
 
 void AtExitClean(AtExitHeader *head) {
   int cur_node = 0;
-  if (head == NULL) {
+  
+  if (BadAtExitHeader(head)) {
     return;
   }
 
@@ -256,18 +176,11 @@ void AtExitClean(AtExitHeader *head) {
 }
 
 void AtExitFree(AtExitHeader *head) {
-  size_t size1 = 0;
-  size_t size2 = 0;
-  if (head == NULL) {
+  if (BadAtExitHeader(head)) {
     return;
   }
 
   DoAtExit(head);
 
-  size1 = sizeof(AtExitNode) * (size_t)head->capacity;
-  size2 = sizeof(AtExitHeader);
-  
-  MemFree(head->array, 1, &size1);
-  MemFree(head, 1, &size2);
+  MemFree(head);
 }
-#endif

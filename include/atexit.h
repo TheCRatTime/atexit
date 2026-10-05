@@ -19,71 +19,54 @@
 
 #include <stdio.h>
 
-/*
- * There isn't be debug in your program
- * if you haven't defined ATEXIT_DEBUG
- *
- * There are wrappers for alloc to check
- * memory leak.
- *
- * Included for source code.
- */
-
-#include "debug.h"
-
 #define DEFAULT_ATEXIT_SIZE 50
+
+typedef void (*Void_VoidPtr_F)(void*);
+typedef Void_VoidPtr_F V_VP_F;
 
 /* AtExit node */
 typedef struct AtExitNode {
-  void*               arg; /* Argument, that will be used */
-  void (*function)(void*); /* Pointer to function */
+  void* arg;       /* Argument, that will be used */
+  V_VP_F function; /* Pointer to function         */
 } AtExitNode;
 
 /* Header of AtExit nodes */
 typedef struct AtExitHeader {
-  int         capacity; /* Size of nodes */
-  int             used; /* Used nodes    */
-  AtExitNode*    array; /* Nodes         */
+  int capacity;      /* Size of nodes */
+  int used;          /* Used nodes    */
+  AtExitNode* array; /* Nodes         */
 } AtExitHeader;
 
-/* Init AtExitHeader
+/* Init AtExitHeader.
    Return value is pointer to AtExitHeader*
    or NULL if OOM */
-AtExitHeader* InitAtExit(int size);
+AtExitHeader* InitAtExit(int);
 
 /* Set function, that will be called later.
    Return value is 0 if all good and 1 if
    haven't left nodes */
-int SetAtExit(AtExitHeader* head, void (*to_set)(void*), void* arg);
+int SetAtExit(AtExitHeader*, void (*)(void*), void*);
 
 /* Run and reset all AtExit functions */
-void DoAtExit(AtExitHeader* head);
+void DoAtExit(AtExitHeader*);
 
 /* Malloc data and set AtExit free function
    Return pointer, that gave by malloc */
-void* AtExitMalloc(AtExitHeader* head, size_t bytes
-/* In debug, needed key argument */
-#ifdef ATEXIT_DEBUG
-                   , char* key
-#endif
-);
+void* AtExitMalloc(AtExitHeader*, size_t);
 
 /* Open file and set AtExit fclose function
    Return pointer to FILE*, that gave by fopen */
-FILE* AtExitFopen(AtExitHeader* head, const char* filename,
-                  const char* modes);
+FILE* AtExitFopen(AtExitHeader*, const char*, const char*);
 
 /* Clean all AtExit list.
    Warning: if you have set free, don't call this
    function, you can get memory leak. */
-void AtExitClean(AtExitHeader* head);
+void AtExitClean(AtExitHeader*);
 
 /* Free HEAD. */
-void AtExitFree(AtExitHeader* head);
+void AtExitFree(AtExitHeader*);
 
-#ifdef USE_DEFER
 /* Stolen from Go */
 #define defer SetAtExit
-#endif
 
 #endif /* ATEXIT_ATEXIT_H_ */

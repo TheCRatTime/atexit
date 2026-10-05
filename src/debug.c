@@ -20,61 +20,36 @@
 #include <stdlib.h>
 
 #ifdef ATEXIT_DEBUG
-#include <stdio.h>
+# include <stdio.h>
 
 /* Google style: bad: created global non const variable */
-static size_t allocated = 0;
-static size_t freed     = 0;
+static allocated_blocks = 0;
 #endif
 
 /* Malloc wrapper: */
-void* MemAlloc(size_t bytes, char* key) {
-  void* ret = NULL;
-  ret = malloc(bytes);
+void* MemAlloc(size_t bytes) {
+  void* ret = malloc(bytes);
 #ifdef ATEXIT_DEBUG
-  if (ret) {
-    allocated += bytes;
-    if (key != NULL) {
-      SetTrace(key, bytes);
-    }
-  }
-#else
-  (void)key;
+  allocated_blocks++;
 #endif
   return ret;
 }
 
-void MemFree(void* ptr, int is_bytes, void* bytes_or_key) {
+void MemFree(void* ptr) {
   free(ptr);
 #ifdef ATEXIT_DEBUG
-  if (!is_bytes) {
-    if (FreeMapFind((char*)bytes_or_key)) {
-      MapNode* data = FreeMapGet((char*)bytes_or_key);
-      freed += *(size_t*)data->val;
-    }
-  } else {
-    freed += *(size_t*)bytes_or_key;
-  }
-#else
-  (void)bytes_or_key;
-  (void)is_bytes;
+  allocated_blocks--;
 #endif
   return;
 }
 
 #ifdef ATEXIT_DEBUG
 void DropAllocated(void) {
-  printf("Allocated: %lu\n", allocated);
-  printf("Freed:     %lu\n", freed);
+  printf("Allocated blocks: %d\n", allocated_blocks);
   return;
 }
 
-void WriteAllocated(DropAllocRet *stats) {
-  stats->allocated = allocated;
-  stats->freed     = freed;
-}
-
-void AddAllocated(size_t bytes) {
-  allocated += bytes;
+int GetAllocated(void) {
+  return allocated_blocks;
 }
 #endif

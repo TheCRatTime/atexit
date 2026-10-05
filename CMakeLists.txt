@@ -51,7 +51,7 @@ endif()
 add_library(atexit_do ${REAL_LIB_TYPE} src/atexit.c src/debug.c)
 
 if(REAL_USE_TESTS)
-  add_library(atexit_debug ${REAL_LIB_TYPE} src/atexit.c src/debug.c src/hashmap.c)
+  add_library(atexit_debug ${REAL_LIB_TYPE} src/atexit.c src/debug.c)
   target_compile_options(atexit_debug PRIVATE -DATEXIT_DEBUG -g)
   target_include_directories(atexit_debug PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

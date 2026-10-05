@@ -3,16 +3,13 @@
 #include <assert.h>
 
 static void MemCheck(void) {
-  int bad = InitFreeMap();
   AtExitHeader* test = InitAtExit(0);
   int* var = NULL;
-  DropAllocRet stats;
   
   /* Test fails if can't get memory */
   assert(test != NULL);
-  assert(bad != 1);
 
-  var = (int*)AtExitMalloc(test, sizeof(int), "var");
+  var = (int*)AtExitMalloc(test, sizeof(int));
   /* Get NULL is bad because size of AtExit is big */
   assert(var != NULL);
 
@@ -23,9 +20,7 @@ static void MemCheck(void) {
 
   DropAllocated();
 
-  WriteAllocated(&stats);
-
-  assert(stats.allocated == stats.freed);
+  assert(GetAllocated() == 0);
   return;
 }
 

@@ -19,30 +19,18 @@
 
 #include <stddef.h>
 
-#ifdef ATEXIT_DEBUG
-#include "hashmap.h"
-
-typedef struct DropAllocRet {
-  size_t freed;
-  size_t allocated;
-} DropAllocRet;
-#endif
+/* For trace memory leak */
+void* MemAlloc(size_t);
 
 /* For trace memory leak */
-void* MemAlloc(size_t bytes, char* key);
-
-/* For trace memory leak */
-void MemFree(void* ptr, int is_bytes, void* bytes_or_key);
+void MemFree(void*);
 
 #ifdef ATEXIT_DEBUG
-/* Drop all malloc' bytes and freed bytes */
+/* Print all malloc' blocks, that not freed. */
 void DropAllocated(void);
 
-/* Like DropAllocated(), but writes value to STATS */
-void WriteAllocated(DropAllocRet* stats);
-
-/* Add BYTES to allocated */
-void AddAllocated(size_t bytes);
-#endif 
+/* Get number of not freed blocks */
+int GetAllocated(void);
+#endif
 
 #endif /* ATEXIT_DEBUG_H_ */

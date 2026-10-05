@@ -10,20 +10,44 @@
 #undef ATEXIT_DEBUG
 #endif
 
-/* Using keyword: defer */
-#define USE_DEFER
-
 #include <atexit.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 
+/**************************************
+ * GENERATING wrapper by #including file
+ *
+ * Need no define four macro:
+ */
+
+/* 1st: name of function */
+#define GEN_NAME TestFunc
+
+/* 2nd: name of wrapper*/
+#define GEN_OUT  TestFuncWrapper
+
+/* 3rd: type */
+#define GEN_TYPE void
+
+/* 4th: arguments.
+   to add argument write: GENARG(type, name) */
+#define GEN_ARGS GENARG(int, n1) GENARG(int, n2) /* ... */
+
+/* Generate our wrapper. */
+#include <gen_wrapper.h>
+
+/* This is will generate wrapper by macro. No need write #undef.*/
+
+
 /**********************************************
  * Test function.
+ * 
  * Function must take:
- * AtExitHeader* -> for functions, that will be
- * executed at exit.
- * Other         -> functions arguments
+ * - AtExitHeader* -> for functions, that will be
+ * executed at exit. Needed for wrapper, see
+ * upper.
+ * - Other -> functions arguments or none.
  */
 static void TestFunc(AtExitHeader* atexit_h, int num1, int num2) {
   /* Using special function AtExitMalloc for malloc() */
@@ -31,9 +55,9 @@ static void TestFunc(AtExitHeader* atexit_h, int num1, int num2) {
   int* allocated2 = (int*)AtExitMalloc(atexit_h, sizeof(int));
 
   if (allocated1 == NULL) {
-    /**************************************************
-     * No need call like CallAtExit or another function
-     * because using wrapper
+    /*******************************************
+     * No need call DoAtExit or another function
+     * because using wrapper.
      */
     return;
   }
@@ -59,28 +83,6 @@ static void TestFunc(AtExitHeader* atexit_h, int num1, int num2) {
   /* Variables will be automatically freed. */
   return;
 }
-
-/**************************************
- * GENERATING wrapper by including file
- *
- * Need no define four macro:
- */
-
-/* 1st: name of function */
-#define GEN_NAME TestFunc
-
-/* 2nd: name of wrapper*/
-#define GEN_OUT  TestFuncWrapper
-
-/* 3rd: type */
-#define GEN_TYPE void
-
-/* 4th: arguments.
-   to add argument write: GENARG(type, name) */
-#define GEN_ARGS GENARG(int, n1) GENARG(int, n2) /* ... */
-
-/* Generate our wrapper. */
-#include <gen_wrapper.h>
 
 /* *** Main function *** */
 int main(void) {
