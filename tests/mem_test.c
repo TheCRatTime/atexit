@@ -1,4 +1,5 @@
 #include "../include/atexit.h"
+#include "../include/debug.h"
 
 #include <assert.h>
 

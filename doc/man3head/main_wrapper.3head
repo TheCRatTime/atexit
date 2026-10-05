@@ -1,0 +1,63 @@
+.\" Copyright (C) 2026 TheCRatTime
+.\"
+.\" Licensed under the Apache License, Version 2.0 (the "License");
+.\" you may not use this file except in compliance with the License.
+.\" You may obtain a copy of the License at
+.\"
+.\"     http://www.apache.org/licenses/LICENSE-2.0
+.\"
+.\" Unless required by applicable law or agreed to in writing, software
+.\" distributed under the License is distributed on an "AS IS" BASIS,
+.\" WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+.\" See the License for the specific language governing permissions and
+.\" limitations under the License.
+.TH "main_wrapper" "3head" "2026\-10\-05" "TheCRatTime" "atexit"
+.SH NAME
+\fBmain_wrapper.\&h\fR \- generate wrapper for function \fBmain\fR.\&
+.PP
+.SH DESCRIPTION
+See \fBgen_wrapper\fR(3head).\&
+.PP
+This is pre\-generated wrapper for main, you need define one macro
+instead of four.\&
+.PP
+\fBMAIN_VOID\fR
+.RS 4
+Without arguments exclude first \fBAtExitHeader\fR.\&
+.RE
+.PP
+\fBMAIN_ARGV\fR
+.RS 4
+Three arguments: \fBAtExitHeader\fR, \fBint argc\fR and \fBchar** argv\fR.\&
+.RE
+.PP
+\fBMAIN_ENVP\fR
+.RS 4
+Four arguments: \fBAtExitHeader\fR, \fBint argc\fR, \fBchar** argv\fR and \fBchar** envp\fR.\&
+.RE
+.PP
+
+You also can define \fBATEXIT_DIS_ERROR\fR.
+.PP
+You can define \fBNO_UNDEFS\fR and \fBMAIN_*\fR macro don't will be
+undefined by \fB#undef\fR.\&
+.PP
+.SH EXAMPLES
+.nf
+/* void main */
+#define MAIN_VOID
+#include "main_wrapper.h"
+#include <atexit.h>
+
+/* Real main function: */
+int Main(AtExitHeader* main_atexit) {
+  /* ... */
+  return 0;
+}
+.fi
+.PP
+.SH AUTHORS
+Project and man\-page: TheCRatTime
+.PP
+.SH SEE ALSO
+\fBatexit_do\fR(3), \fBSetAtExit\fR(3), \fBgen_wrapper\fR(3head), \fBAtExitHeader\fR(3type)

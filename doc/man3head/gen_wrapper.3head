@@ -1,0 +1,82 @@
+.\" Copyright (C) 2026 TheCRatTime
+.\"
+.\" Licensed under the Apache License, Version 2.0 (the "License");
+.\" you may not use this file except in compliance with the License.
+.\" You may obtain a copy of the License at
+.\"
+.\"     http://www.apache.org/licenses/LICENSE-2.0
+.\"
+.\" Unless required by applicable law or agreed to in writing, software
+.\" distributed under the License is distributed on an "AS IS" BASIS,
+.\" WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+.\" See the License for the specific language governing permissions and
+.\" limitations under the License.
+.TH "gen_wrapper" "3head" "2026\-10\-05" "TheCRatTime" "atexit"
+.SH NAME
+\fBgen_wrapper.\&h\fR \- generate wrappers.\&
+.PP
+.SH DESCRIPTION
+You can generate wrappers, that will be do free with \fBAtExitHeader\fR.\& You can just
+write \fBreturn\fR instead of \fBDoAtExit(somename); return\fR.\&
+.PP
+Need to define four macro:
+.PP
+\fBGEN_NAME\fR
+.RS 4
+Real function name.\&
+.RE
+.PP
+\fBGEN_OUT\fR
+.RS 4
+Wrapper name.\&
+.RE
+.PP
+\fBGEN_TYPE\fR
+.RS 4
+Type of return value.\&
+.RE
+.PP
+\fBGEN_ARGS\fR
+.RS 4
+Arguments to wrapper.\&
+.PP
+To add one arg, write \fBGENARG(\fItype\fB, \fIname\fB)\fR where \fItype\fR is a
+type of argument and \fBname\fR argument name.\&
+.RE
+.PP
+\fBGEN_NOARGS\fR
+.RS 4
+Specify that function needs only one arg: \fBAtExitHeader\fR.\&
+.PP
+Cannot be defined with \fBGEN_ARGS\fR.\&
+.RE
+.PP
+If you don't defined four macro, will be error.\&
+You can disable errors with \fBATEXIT_DIS_ERROR\fR.\&
+.PP
+You can define \fBGEN_STATIC\fR for make function static.\&
+.PP
+.SH ERRORS
+If you don't defined macro, will be error.\& This is can be
+\fBDon't defined \fIGEN_OUT\fR, you need define \fIGEN_OUT\fR.\&
+.PP
+If you see \fBUndefine GEN_ARGS/GEN_NOARGS.\fR you defined \fBGEN_ARGS\fR and
+\fBGEN_NOARGS\fR.\& Use \fB#undef\fR to fix it.\&
+.PP
+.SH EXAMPLE
+.nf
+/* function: void RealAdd(AtExitHeader* atexit_h, int n1, int n2) */
+#define GEN_NAME RealAdd /* function name */
+#define GEN_OUT  Add /* Wrapper name */
+#define GEN_TYPE void /* Return value */
+#define GEN_ARGS GENARG(int, n1) GENARG(int, n2) /* You can write more*/
+#include "gen_wrapper.h"
+
+/* Wrapper will be automatically generated. */
+.fi
+.PP
+.SH AUTHORS
+Project and man\-page: TheCRatTime
+.PP
+.SH SEE ALSO
+\fBatexit_do\fR(3), \fBatexit_defer\fR(3), \fBAtExitHeader\fR(3type)

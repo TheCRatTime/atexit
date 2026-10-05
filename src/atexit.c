@@ -29,6 +29,13 @@ static void AtExitFClose(void* file) {
   }
 }
 
+/* Same for free */
+static void AtExitFreeWrapper(void* ptr) {
+  if (ptr) {
+    free(ptr);
+  }
+}
+
 /* Check validate of HEADER */
 static int BadAtExitHeader(AtExitHeader* header) {
   if (header == NULL) {
@@ -47,11 +54,11 @@ static int BadAtExitHeader(AtExitHeader* header) {
 
 AtExitHeader* InitAtExit(int size) {
   AtExitHeader* ret = NULL;
-  void* slice = NULL;
+  char* slice = NULL;
   int cur_node = 0;
 
   /* No size / Big size error */
-  if (size < 0 || size > 175) {
+  if (size < 0 || size > 10000) {
     return ret;
   }
 
@@ -60,18 +67,18 @@ AtExitHeader* InitAtExit(int size) {
     size = DEFAULT_ATEXIT_SIZE;
   }
 
-  slice = (AtExitHeader*)MemAlloc(
+  slice = (char*)MemAlloc(
           sizeof(AtExitHeader) + (sizeof(AtExitNode) * (size_t)size));
   if (slice == NULL) {
     return NULL;
   }
 
-  ret = slice;
+  ret = (AtExitHeader*)(void*)slice;
   ret->capacity = size;
   ret->used = 0;
 
   /* slice = header + nodes... */
-  ret->array = slice + sizeof(AtExitHeader);
+  ret->array = (AtExitNode*)(void*)(slice + sizeof(AtExitHeader));
   
   for(; cur_node < size; cur_node++) {
     ret->array[cur_node].function = NULL;
@@ -106,7 +113,7 @@ void DoAtExit(AtExitHeader* head) {
   }
 
   /* Using LIFO -> Last In First Out. */
-  for(cur_func = head->used; cur_func >= 0; cur_func--) {
+  for(cur_func = head->used - 1; cur_func >= 0; cur_func--) {
     if (head->array[cur_func].function == NULL) {
       continue;
     }
@@ -136,7 +143,7 @@ void* AtExitMalloc(AtExitHeader* head, size_t bytes) {
     return NULL;
   }
 
-  SetAtExit(head, free, ret);
+  SetAtExit(head, AtExitFreeWrapper, ret);
   
   return ret;
 }

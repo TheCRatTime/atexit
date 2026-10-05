@@ -21,6 +21,9 @@
  * Need no define four macro:
  */
 
+/* If you want static, define: */
+#define GEN_STATIC
+
 /* 1st: name of function */
 #define GEN_NAME TestFunc
 
@@ -34,11 +37,7 @@
    to add argument write: GENARG(type, name) */
 #define GEN_ARGS GENARG(int, n1) GENARG(int, n2) /* ... */
 
-/* Generate our wrapper. */
-#include <gen_wrapper.h>
-
-/* This is will generate wrapper by macro. No need write #undef.*/
-
+/* The wrapper generation next */
 
 /**********************************************
  * Test function.
@@ -84,37 +83,40 @@ static void TestFunc(AtExitHeader* atexit_h, int num1, int num2) {
   return;
 }
 
-/* *** Main function *** */
-int main(void) {
-  const int MainAtExitSize = 10;
-  AtExitHeader* test_atexit = NULL;
-  /* You can create AtExit in main... */
-  AtExitHeader* main_atexit = InitAtExit(MainAtExitSize);
-  if (main_atexit == NULL) {
-    perror("InitAtExit");
-    return 1;
-  }
+/* *** WRAPPER GENERATION *** */
 
-  /* Using 'defer' from Go */
-  defer(main_atexit, free, test_atexit);
+/* Generate our wrapper. */
+#include <gen_wrapper.h>
+
+/* This is will generate wrapper by macro. No need write #undef.
+   NOTE: GEN_STATIC don't will be undefined */
+
+/* *** Main function *** */
+
+/* Generating wrapper. Without gen_wrapper.h: */
+#define MAIN_VOID /* void type */
+#include <main_wrapper.h>
+
+int Main(AtExitHeader* main_atexit) {
+  /* You CAN't do AtExitFree(main_atexit)
+     because using wrapper. */
+     
+  AtExitHeader* test_atexit = NULL;
 
   test_atexit = InitAtExit(0);
   if (test_atexit == NULL) {
-    /* ...but you need call: */
-    AtExitFree(main_atexit);
-    /* or create wrapper.    */
     perror("InitAtExit");
+    /* Just return */
     return 1;
   }
 
-  /*****************************************
-   * Just calling functions, without free(),
-   * fclose() or your function
-   */
+  defer(main_atexit, free, test_atexit);
+
+  /* Just calling functions, without free(),
+     fclose() or your function */
+  
   TestFuncWrapper(test_atexit, 6, 7);
 
-  /* Before free calls DoAtExit() */
-  AtExitFree(main_atexit);
   return 0;
 }
 

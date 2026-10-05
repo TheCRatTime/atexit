@@ -1,19 +1,26 @@
 # atexit
+
 **atexit** - forget about the forgotten free()
 
 # Description
-This is a small project for disable double free and
+
+This is a small project to prevent double free and
 memory leak.
 
 ## Features
+
 - C89/ANSI C code standard.
 - Minimal memory usage.
+- Auto-free functions
+- Auto-generation wrappers
 
 # Needed
+
 - C Compiler with support C89 standard.
 - CMake 3.10 and greater
 
 ### Building
+
 ```bash
 # Just build
 cmake -B build
@@ -46,7 +53,7 @@ Default: OFF
 Default: ON
 
 ### How add to your project
-That use atexit in your project, you can:
+To use atexit in your project, you can:
 1. Link code and library (**libatexit_do.a**)
 ```bash
 # Example:

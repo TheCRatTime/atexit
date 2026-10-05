@@ -23,7 +23,7 @@
 # include <stdio.h>
 
 /* Google style: bad: created global non const variable */
-static allocated_blocks = 0;
+static int allocated_blocks = 0;
 #endif
 
 /* Malloc wrapper: */

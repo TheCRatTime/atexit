@@ -20,19 +20,23 @@
    Check for each macro. */
 #ifndef ATEXIT_DIS_ERROR
 # if !defined(GEN_NAME)
-#  error Don't defined GEN_NAME.
+#  error "Don't defined GEN_NAME."
 # endif
 
 # if !defined(GEN_OUT)
-#  error Don't defined GEN_OUT.
+#  error "Don't defined GEN_OUT."
 # endif
 
 # if !defined(GEN_TYPE)
-#  error Don't defined GEN_TYPE.
+#  error "Don't defined GEN_TYPE."
 # endif
 
-# if !defined(GEN_ARGS)
-#  error Don't defined GEN_ARGS.
+# if !defined(GEN_ARGS) && !defined(GEN_NOARGS)
+#  error "Don't defined GEN_ARGS/GEN_NOARGS."
+# endif
+
+# if defined(GEN_NOARGS) && defined(GEN_ARGS)
+#  error "Undefine GEN_ARGS/GEN_NOARGS."
 # endif
 #endif
 
@@ -42,27 +46,45 @@
 #define IS_VOID(t) GLUE(TYPE, t)
 
 /* Generate argument macro */
-#define GENARG(t, n) , t n
+#define GENARG(t, n) , t
 
-/* Can define static functions*/
+/* Can define static functions */
 #ifdef GEN_STATIC
 static
 #endif
-GEN_TYPE GEN_OUT(AtExitHeader* atexit_h GEN_ARGS);
 
+#ifdef GEN_NOARGS
+GEN_TYPE GEN_OUT(AtExitHeader*);
+#else
+GEN_TYPE GEN_OUT(AtExitHeader* GEN_ARGS);
+#endif
+
+#undef GENARG
+#define GENARG(t, n) , t n
+
+#ifdef GEN_STATIC
+static
+#endif
+#ifdef GEN_NOARGS
+GEN_TYPE GEN_OUT(AtExitHeader* atexit_h) {
+#else
 GEN_TYPE GEN_OUT(AtExitHeader* atexit_h GEN_ARGS) {
+#endif
   /* If type is void, no need declare 'ret' */
 #if IS_VOID(GEN_TYPE)
 #else
-  GEN_TYPE ret;
-  ret = 
+  GEN_TYPE ret = 
 #endif
 
 /* Redefine GENARG: need only variable names */
 #undef GENARG
 #define GENARG(t, v) , v
 
+#ifdef GEN_NOARGS
+  GEN_NAME(atexit_h);
+#else
   GEN_NAME(atexit_h GEN_ARGS);
+#endif
   DoAtExit(atexit_h);
 
   /* Check for void again */
@@ -84,3 +106,5 @@ GEN_TYPE GEN_OUT(AtExitHeader* atexit_h GEN_ARGS) {
 #undef GEN_OUT
 #undef GEN_TYPE
 #undef GEN_ARGS
+
+#undef GEN_NOARGS

@@ -20,6 +20,7 @@
 #include <stdio.h>
 
 #define DEFAULT_ATEXIT_SIZE 50
+#define ATEXIT_DEFVAL        0
 
 typedef void (*Void_VoidPtr_F)(void*);
 typedef Void_VoidPtr_F V_VP_F;

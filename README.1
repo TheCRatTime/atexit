@@ -1,14 +1,18 @@
-.TH "README" "1" "2026\-09\-28" "TheCRatTime" "atexit"
+.TH "README" "1" "2026\-10\-05" "TheCRatTime" "atexit"
 .SH NAME
 \fBatexit\fR \- forget about the forgotten \fBfree\fR(3)
 .PP
 .SH DESCRIPTION
-This is a small project for disable double free and memory leak.\&
+This is a small project to prevent double free and memory leak.\&
 .PP
 .SS Features
 \fB-\fR \fBC89\fR/\fBANSI C\fR code standard.\&
 .br
 \fB-\fR Minimal memory usage.\&
+.br
+\fB-\fR Auto-free functions.\&
+.br
+\fB-\fR Auto-generation wrappers.\&
 .PP
 .SS Needed
 \fB-\fR C Compiler with support C89 standard.\&
@@ -67,7 +71,7 @@ Default: ON
 .RE
 .PP
 .SS How add to your project
-That use atexit in your project, you can:
+To use atexit in your project, you can:
 .br
 1.\& Link code and library (\fBlibatexit_do.a\fR)
 .nf
