@@ -14,6 +14,27 @@ memory leak.
 - Auto-free functions
 - Auto-generation wrappers
 
+# Quick start
+
+```c
+#include "atexit.h"
+
+#define MAIN_VOID
+#include "main_wrapper.h"
+
+int Main(AtExitHeader* main_atexit) {
+  char* buffer = AtExitMalloc(main_atexit, 4096);
+  if (!buffer) {
+    return 1;
+  }
+
+  /* do something... */
+
+  /* No need write free() */
+  return 0;
+}
+```
+
 # Needed
 
 - C Compiler with support C89 standard.
