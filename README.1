@@ -1,26 +1,28 @@
-.TH "README" "1" "2026\-10\-05" "TheCRatTime" "atexit"
-.SH NAME
+.TH README 1 2026\-10\-07 atexit TheCRatTime
+.SH atexit
 \fBatexit\fR \- forget about the forgotten \fBfree\fR(3)
 .PP
-.SH DESCRIPTION
-This is a small project to prevent double free and memory leak.\&
+.SH Description
+This is a small project to prevent double free and
+memory leak.\&
 .PP
 .SS Features
-\fB-\fR \fBC89\fR/\fBANSI C\fR code standard.\&
+\fB\-\fR C89/ANSI C code standard.\&
 .br
-\fB-\fR Minimal memory usage.\&
+\fB\-\fR Minimal memory usage.\&
 .br
-\fB-\fR Auto-free functions.\&
+\fB\-\fR Auto-free functions
 .br
-\fB-\fR Auto-generation wrappers.\&
+\fB\-\fR Auto-generation wrappers
 .PP
-.SH QUICK START
+.SS Quick start
 .nf
 .RS 4
-#include "atexit.h"
+#define ATEXIT_SOURCE
+#include "atexit.\&h"
 
 #define MAIN_VOID
-#include "main_wrapper.h"
+#include "main_wrapper.\&h"
 
 int Main(AtExitHeader* main_atexit) {
   char* buffer = AtExitMalloc(main_atexit, 4096);
@@ -28,7 +30,7 @@ int Main(AtExitHeader* main_atexit) {
     return 1;
   }
 
-  /* do something... */
+  /* do something.\&.\&.\& */
 
   /* No need write free() */
   return 0;
@@ -37,52 +39,26 @@ int Main(AtExitHeader* main_atexit) {
 .RE
 .PP
 .SS Needed
-\fB-\fR C Compiler with support C89 standard.\&
+\fB\-\fR C Compiler with support C89 standard.\&
 .br
-\fB-\fR CMake 3.\&10 and greater
+\fB\-\fR CMake 3.\&10 and greater
 .PP
-.SH BUILDING
+.SS Building
 .nf
 .RS 4
-# Just build
-cmake \-B build
+cmake -B build
 cd build/
 make
 .fi
 .RE
 .PP
-.nf
-.RS 4
-# Fast build
-cmake \-B build
-cd build/
-make \-j$(nproc)
-.fi
-.RE
-.PP
-.nf
-.RS 4
-# Use ninja
-cmake -B build -G Ninja
-cd build/
-ninja
-.fi
-.RE
-.PP
 CMake have options:
-.PP
-\fBUSE_SHARED\fR
-.RS 4
-Use shared library instead of static.\&
-.br
-Default: OFF
-.RE
 .PP
 \fBBUILD_EX\fR
 .RS 4
 Build examples in \fBexamples/\fR directory.\&
 .br
-Default: OFF
+Default: ON
 .RE
 .PP
 \fBUSE_TESTS\fR
@@ -93,30 +69,21 @@ Default: ON
 .RE
 .PP
 .SS How add to your project
-To use atexit in your project, you can:
-.br
-1.\& Link code and library (\fBlibatexit_do.a\fR)
-.nf
-.RS 4
-# Example:
-gcc -B/path/to/libraries/ your_code.c -latexit_do -o output
-.fi
-.RE
+To use atexit in your project, you just move \fBinclude/*\fR to project:
 .PP
-2.\& Move source to project:
 .nf
 .RS 4
-mkdir -p myproject/src
-cp src/*.c myproject/src/
+mkdir -p myproject/
 cp -r include/ myproject/
 .fi
 .RE
 .PP
-.SH EXAMPLES
+.SH Examples
 You can find examples in \fBexamples/\fR directory.\&
 .PP
-.SH LICENSE
-Project is under \fBApache 2.\&0\fR license.\&
+.SH License
+Project is under Apache 2.\&0 license.\&
 .PP
-.SH AUTHORS
+.SH Authors
 TheCRatTime.\&
+.PP

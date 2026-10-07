@@ -1,5 +1,5 @@
+#define ATEXIT_SOURCE
 #include "../include/atexit.h"
-#include "../include/debug.h"
 
 #include <assert.h>
 
@@ -19,6 +19,7 @@ static void MemCheck(void) {
 
   AtExitFree(test);
 
+  /* Print log */
   DropAllocated();
 
   assert(GetAllocated() == 0);

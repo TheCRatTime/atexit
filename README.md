@@ -5,7 +5,7 @@
 # Description
 
 This is a small project to prevent double free and
-memory leak.
+memory leak. 
 
 ## Features
 
@@ -14,9 +14,10 @@ memory leak.
 - Auto-free functions
 - Auto-generation wrappers
 
-# Quick start
+## Quick start
 
 ```c
+#define ATEXIT_SOURCE
 #include "atexit.h"
 
 #define MAIN_VOID
@@ -35,56 +36,32 @@ int Main(AtExitHeader* main_atexit) {
 }
 ```
 
-# Needed
+## Needed
 
 - C Compiler with support C89 standard.
 - CMake 3.10 and greater
 
-### Building
+## Building
 
 ```bash
-# Just build
 cmake -B build
 cd build/
 make
 ```
 
-```bash
-# Fast build
-cmake -B build
-cd build/
-make -j$(nproc)
-```
-
-```bash
-# Use ninja
-cmake -B build -G Ninja
-cd build/
-ninja
-```
-
 CMake have options:
-**USE_SHARED** - use shared library instead of static.
-Default: OFF
 
 **BUILD_EX** - build examples in `examples/` directory.
-Default: OFF
+Default: ON
 
 **USE_TESTS** - build tests.
 Default: ON
 
 ### How add to your project
-To use atexit in your project, you can:
-1. Link code and library (**libatexit_do.a**)
-```bash
-# Example:
-gcc -B/path/to/libraries/ your_code.c -latexit_do -o output
-```
+To use atexit in your project, you just move `include/*` to project:
 
-2. Move source to project:
 ```bash
-mkdir -p myproject/src
-cp src/*.c myproject/src/
+mkdir -p myproject/
 cp -r include/ myproject/
 ```
 
@@ -98,8 +75,7 @@ Project is under Apache 2.0 license.
 TheCRatTime.
 
 ## Also
-See this readme in manual -> `README.1`
-with this command:
+See this readme in manual (`README.1`) with this command:
 
 ```bash
 man -l README.1

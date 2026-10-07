@@ -5,11 +5,9 @@
  * Use AtExit in main.
  */
 
-/* Disable debug */
-#ifdef ATEXIT_DEBUG
-#undef ATEXIT_DEBUG
-#endif
-
+/* Needed source.
+   Write in one file this define. */
+#define ATEXIT_SOURCE
 #include <atexit.h>
 
 #include <stdio.h>
@@ -21,7 +19,7 @@
  * Need no define four macro:
  */
 
-/* If you want static, define: */
+/* If you want static: */
 #define GEN_STATIC
 
 /* 1st: name of function */

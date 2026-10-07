@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
+/* === BEGIN HEADER === */
+
 #ifndef ATEXIT_ATEXIT_H_
 #define ATEXIT_ATEXIT_H_
 
 #include <stdio.h>
+#include <stddef.h>
 
+/* Initial AtExitHeader struct */
 #define DEFAULT_ATEXIT_SIZE 50
+
+/* Pass default value to InitAtExit */
 #define ATEXIT_DEFVAL        0
 
 typedef void (*Void_VoidPtr_F)(void*);
@@ -70,4 +76,245 @@ void AtExitFree(AtExitHeader*);
 /* Stolen from Go */
 #define defer SetAtExit
 
+/* === Debug functions === */
+
+/* For trace memory leak */
+void* MemAlloc(size_t);
+
+/* For trace memory leak */
+void MemFree(void*);
+
+#ifdef ATEXIT_DEBUG
+/* Print all malloc' blocks, that not freed. */
+void DropAllocated(void);
+
+/* Get number of not freed blocks */
+int GetAllocated(void);
+#endif
+
 #endif /* ATEXIT_ATEXIT_H_ */
+/************************/
+
+/* === BEGIN SOURCE === */
+#ifdef ATEXIT_SOURCE
+
+/* includes */
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+
+/* debug.c */
+
+#ifdef ATEXIT_DEBUG
+/* Google style: bad: created global non const variable */
+static int allocated_blocks = 0;
+#endif
+
+/* Malloc wrapper: */
+void* MemAlloc(size_t bytes) {
+  void* ret = malloc(bytes);
+  
+#ifdef ATEXIT_DEBUG
+  allocated_blocks++;
+#endif
+
+  return ret;
+}
+
+void MemFree(void* ptr) {
+  free(ptr);
+  
+#ifdef ATEXIT_DEBUG
+  allocated_blocks--;
+#endif
+
+  return;
+}
+
+#ifdef ATEXIT_DEBUG
+
+void DropAllocated(void) {
+  printf("Allocated blocks: %d\n", allocated_blocks);
+  return;
+}
+
+int GetAllocated(void) {
+  return allocated_blocks;
+}
+
+#endif
+
+/* atexit.c */
+
+/* fclose() isn't equals void (*func)(void*),
+   needed wrapper. */
+static void AtExitFClose(void* file) {
+  if (file != NULL) {
+    fclose((FILE*)file);
+  }
+}
+
+/* Same for free */
+static void AtExitFreeWrapper(void* ptr) {
+  if (ptr) {
+    free(ptr);
+  }
+}
+
+/* Check validate of HEADER */
+static int BadAtExitHeader(AtExitHeader* header) {
+  if (header == NULL) {
+    return 1;
+  }
+
+  if (header->array == NULL ||
+      header->used < 0      ||
+      header->capacity <= 0 ||
+      header->used > header->capacity) {
+    return 1;
+  }
+
+  return 0;
+}
+
+AtExitHeader* InitAtExit(int size) {
+  AtExitHeader* ret = NULL;
+  char* slice = NULL;
+  int cur_node = 0;
+
+  /* No size / Big size error */
+  if (size < 0 || size > 10000) {
+    return ret;
+  }
+
+  /* Default value */
+  if (size == 0) {
+    size = DEFAULT_ATEXIT_SIZE;
+  }
+
+  /* Getting big slice of memory. */
+  slice = (char*)MemAlloc(
+          sizeof(AtExitHeader) + (sizeof(AtExitNode) * (size_t)size));
+  if (slice == NULL) {
+    return NULL;
+  }
+
+  ret = (AtExitHeader*)(void*)slice;
+  ret->capacity = size;
+  ret->used = 0;
+
+  /* slice + header_offset = nodes */
+  ret->array = (AtExitNode*)(void*)(slice + sizeof(AtExitHeader));
+  
+  for(; cur_node < size; cur_node++) {
+    ret->array[cur_node].function = NULL;
+    ret->array[cur_node].arg      = NULL;
+  }
+  
+  return ret;
+}
+
+int SetAtExit(AtExitHeader* head, V_VP_F func, void* arg) {
+  if (BadAtExitHeader(head) || func == NULL || arg == NULL) {
+    return 1;
+  }
+
+  if (head->used >= head->capacity) {
+    return 1;
+  }
+
+  head->array[head->used].function = func;
+  head->array[head->used].arg      =  arg;
+  head->used++;
+  
+  return 0;
+}
+
+void DoAtExit(AtExitHeader* head) {
+  int cur_func = 0;
+  
+  if (BadAtExitHeader(head)) {
+    return;
+  }
+
+  /* Using LIFO -> Last In First Out. */
+  for(cur_func = head->used - 1; cur_func >= 0; cur_func--) {
+    if (head->array[cur_func].function == NULL) {
+      continue;
+    }
+
+    head->array[cur_func].function(
+                            head->array[cur_func].arg);
+
+    head->array[cur_func].function = NULL;
+    head->array[cur_func].arg      = NULL;
+  }
+
+  head->used = 0;
+}
+
+void* AtExitMalloc(AtExitHeader* head, size_t bytes) {
+  void* ret = NULL;
+
+  if (BadAtExitHeader(head) || bytes == 0) {
+    return NULL;
+  }
+
+  ret = malloc(bytes);
+  if (ret == NULL) {
+    return NULL;
+  }
+
+  SetAtExit(head, AtExitFreeWrapper, ret);
+  
+  return ret;
+}
+
+FILE* AtExitFopen(AtExitHeader* head, const char* filename,
+                  const char* modes) {
+  FILE* ret = NULL;
+  if (BadAtExitHeader(head) || filename == NULL || modes == NULL) {
+    return NULL;
+  }
+
+  ret = fopen(filename, modes);
+  if (ret == NULL) {
+    return NULL;
+  }
+
+  SetAtExit(head, AtExitFClose, ret);
+
+  return ret;
+}
+
+void AtExitClean(AtExitHeader *head) {
+  int cur_node = 0;
+  
+  if (BadAtExitHeader(head)) {
+    return;
+  }
+
+  for(; cur_node < head->capacity; cur_node++) {
+    head->array[cur_node].function = NULL;
+    head->array[cur_node].arg      = NULL;
+  }
+
+  head->used = 0;
+  
+  return;
+}
+
+void AtExitFree(AtExitHeader *head) {
+  if (BadAtExitHeader(head)) {
+    return;
+  }
+
+  DoAtExit(head);
+
+  MemFree(head);
+}
+
+#undef ATEXIT_SOURCE
+
+#endif /* ATEXIT_SOURCE */
+/************************/
