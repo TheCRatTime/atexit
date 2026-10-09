@@ -81,7 +81,7 @@ void AtExitFree(AtExitHeader*);
 /* For trace INTERNAL memory leak */
 void* MemAlloc(size_t);
 
-/* For trace INTERBAL memory leak */
+/* For trace INTERNAL memory leak */
 void MemFree(void*);
 
 #ifdef ATEXIT_DEBUG
