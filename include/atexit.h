@@ -78,10 +78,10 @@ void AtExitFree(AtExitHeader*);
 
 /* === Debug functions === */
 
-/* For trace memory leak */
+/* For trace INTERNAL memory leak */
 void* MemAlloc(size_t);
 
-/* For trace memory leak */
+/* For trace INTERBAL memory leak */
 void MemFree(void*);
 
 #ifdef ATEXIT_DEBUG
@@ -115,7 +115,9 @@ void* MemAlloc(size_t bytes) {
   void* ret = malloc(bytes);
   
 #ifdef ATEXIT_DEBUG
-  allocated_blocks++;
+  if (ret != NULL) {
+    allocated_blocks++;
+  }
 #endif
 
   return ret;
@@ -181,6 +183,8 @@ AtExitHeader* InitAtExit(int size) {
   AtExitHeader* ret = NULL;
   char* slice = NULL;
   int cur_node = 0;
+  size_t total_size = 0;
+  size_t atexit_size = 0;
 
   /* No size / Big size error */
   if (size < 0 || size > 10000) {
@@ -192,9 +196,11 @@ AtExitHeader* InitAtExit(int size) {
     size = DEFAULT_ATEXIT_SIZE;
   }
 
+  atexit_size = (sizeof(AtExitHeader) + 7) & (size_t)~7;
+  total_size = atexit_size + (sizeof(AtExitNode) * (size_t)size);
+  
   /* Getting big slice of memory. */
-  slice = (char*)MemAlloc(
-          sizeof(AtExitHeader) + (sizeof(AtExitNode) * (size_t)size));
+  slice = (char*)MemAlloc(total_size);
   if (slice == NULL) {
     return NULL;
   }
@@ -204,7 +210,7 @@ AtExitHeader* InitAtExit(int size) {
   ret->used = 0;
 
   /* slice + header_offset = nodes */
-  ret->array = (AtExitNode*)(void*)(slice + sizeof(AtExitHeader));
+  ret->array = (AtExitNode*)(void*)(slice + atexit_size);
   
   for(; cur_node < size; cur_node++) {
     ret->array[cur_node].function = NULL;
@@ -265,7 +271,10 @@ void* AtExitMalloc(AtExitHeader* head, size_t bytes) {
     return NULL;
   }
 
-  SetAtExit(head, AtExitFreeWrapper, ret);
+  if (SetAtExit(head, AtExitFreeWrapper, ret) == 1) {
+    free(ret);
+    return NULL;
+  }
   
   return ret;
 }
@@ -282,7 +291,10 @@ FILE* AtExitFopen(AtExitHeader* head, const char* filename,
     return NULL;
   }
 
-  SetAtExit(head, AtExitFClose, ret);
+  if(SetAtExit(head, AtExitFClose, ret) == 1) {
+    fclose(ret);
+    return NULL;
+  }
 
   return ret;
 }
